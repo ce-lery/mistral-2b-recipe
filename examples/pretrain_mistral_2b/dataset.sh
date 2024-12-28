@@ -164,12 +164,14 @@ tail -n $VALID_DATA_LINES ./results/dataset/oscar/original/oscar2109_ja_remain.t
 rm ./results/dataset/oscar/original/oscar2109_ja_remain.txt 
 rm ./results/dataset/oscar/original/oscar2109_ja.txt 
 
+mv $DATA_DIR/oscar/original/oscar2109_ja_train.txt ../../externals/corpus-cleaner/results/dataset/original/
+
 # ------------------------------------------
 #   download mc4 corpus
 # ------------------------------------------
 # donwload mc4
-GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/allenai/c4.git
-cd c4/multilingual
+GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/datasets/allenai/c4.git $DATA_DIR/c4
+cd $DATA_DIR/c4/multilingual
 # Download 100 items from 0 to 99. 1.5GB each, total 150GB.
 for i in $(seq -w 0 100)
 do
@@ -179,39 +181,39 @@ done
 
 cd -
 
-mkdir -p ja
+mkdir -p $DATA_DIR/c4-ja
 #mv c4/multilingual/c4-ja.*.json.gz ja
 for i in $(seq -w 0 100)
 do
-mv c4/multilingual/c4-ja.tfrecord-00${i}-of-01024.json.gz ja
-gzip -d ja/c4-ja.tfrecord-00${i}-of-01024.json.gz
+mv $DATA_DIR/c4/multilingual/c4-ja.tfrecord-00${i}-of-01024.json.gz $DATA_DIR/c4-ja
+gzip -d $DATA_DIR/c4-ja/c4-ja.tfrecord-00${i}-of-01024.json.gz
 done
-du -sh ja
-# 1.4T    ja
-ls -l ja | grep "^-" | wc -l
+du -sh $DATA_DIR/c4-ja
+# 1.4T    $DATA_DIR/c4-ja
+ls -l $DATA_DIR/c4-ja | grep "^-" | wc -l
 # 70: count of files
 
-touch ja/c4-ja.txt
+touch $DATA_DIR/c4-ja/c4-ja.txt
 # extract text of jsonl
 for i in $(seq -w 0 100)
 do 
 python ../../source/util/extract_text_of_jsonl.py \
-    --input_path ./ja/c4-ja.tfrecord-00${i}-of-01024.json\
-    --output_path ./ja/c4-ja-${i}.txt\
+    --input_path $DATA_DIR/c4-ja/c4-ja.tfrecord-00${i}-of-01024.json\
+    --output_path $DATA_DIR/c4-ja/c4-ja-${i}.txt\
 
-#rm ja/c4-ja.tfrecord-00${i}-of-01024.json
-cat ./ja/c4-ja-${i}.txt >> ja/c4-ja.txt
-# rm ./ja/c4-ja-${i}.txt
+rm $DATA_DIR/c4-ja/c4-ja.tfrecord-00${i}-of-01024.json
+cat $DATA_DIR/c4-ja/c4-ja-${i}.txt >> $DATA_DIR/c4-ja/c4-ja.txt
+rm $DATA_DIR/c4-ja/c4-ja-${i}.txt
 done 
 
-mv ./ja/c4-ja.txt ../../externals/corpus-cleaner/results/dataset/original
+mv $DATA_DIR/c4-ja/c4-ja.txt ../../externals/corpus-cleaner/results/dataset/original
 # ------------------------------------------
 #   corpus_cleaner
 # ------------------------------------------
 # setup corpus_cleaner
 cd ../../externals/corpus-cleaner/
 git checkout v0.1.1
-# # bash scripts/setup.sh
+bash scripts/setup.sh
 bash scripts/build.sh
 cd -
 
